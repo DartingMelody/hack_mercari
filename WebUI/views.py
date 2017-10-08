@@ -6,6 +6,7 @@ from utils import clusterize_latlngs, search
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from models import CustomUser, Request, Trip
+from django.http import Http404
 import datetime
 # Create your views here.
 
@@ -163,9 +164,9 @@ def search_results(request):
     return render(request, 'searchResults.html', {'data': data, 'results': results})
 
 
-@login_required
+#@login_required
 def request_success(request):
-    return render(request, 'requestsuccess.html')
+    return render('requestsuccess.html')
 
 
 @login_required
@@ -174,7 +175,7 @@ def trip_success(request):
 
 @login_required
 def send_request(request):
-    if request.is_ajax() and request.method == 'POST':
+    if request.method == 'POST':
         # try:
         res = json.loads(request.body)
         trip = Trip.objects.get(pk=res['id'])
@@ -186,15 +187,15 @@ def send_request(request):
         start_lng = cords[1]
         end_lat = cords[2]
         end_lng = cords[3]
-
         Request.objects.create(from_user=request.user, trip=trip, status=status, start_place=start_place,
                                start_lat=start_lat, start_lng=start_lng,
                                end_place=end_place, end_lat=end_lat, end_lng=end_lng)
-        return HttpResponse()
+        return request_success(request)
         # except:
         #     return HttpResponseBadRequest()
     else:
-        return HttpResponseNotAllowed(['POST'])
+        raise Http404
+        return 
 
 
 @login_required
